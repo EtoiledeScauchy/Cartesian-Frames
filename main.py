@@ -138,7 +138,6 @@ class CartesianFrame:
         
                 if not all( m1 is m2 or m1 != m2 for m1 in morphisms_tree[-1] for m2 in morphisms_tree[-1]):
                     pdb.set_trace()
-        #pdb.set_trace()
         return morphisms_tree[-1]
     def isomorphisms_to(self, D):
         isomorphisms = []
@@ -199,8 +198,21 @@ class CartesianFrame:
         dot = {(str(a),e) : self(e[0],a[1][e[1]]) for a in A for e in E} # this a is (g,h); this e is the mathematical (a,f); e[1] is f; hence ((g,h),(a,f)) : a.h(f)
         A = {str(a) for a in A } # making hashable for set
         return CartesianFrame(A, E, self.world, dot)
-    def __contains__(self, D):
+    def __contains__(self, D): # multiplicative subagency relationship (sub-environment definition)
         return self <= D and D.dual() <= self.dual()
+    def homotopic(self, D, m0, m1):
+        CtoD = self.morphisms_to(D)
+        assert m0 in CtoD
+        assert m1 in CtoD
+        return (m0[0],m1[1]) in CtoD
+    def __or__(self, D): #  additive subagency relationship (categorical definition)
+        assert self.world == D.world
+        nT = CartesianFrame(self.world, 'e', self.world, {(w,'e') : w for w in self.world})
+        phi0s = [phi0 for phi0 in self.morphisms_to(D) if all(
+            any(phi1 for phi1 in D.morphisms_to(nT) if self.homotopic(
+                nT, phi, (composition(phi1[0], phi0[0]),composition(phi0[1], phi1[1])) )) for phi in self.morphisms_to(nT))]
+        return len(phi0s) == 1
+
 
 def ensure(C : CartesianFrame, closure = True):
     print('\n')
@@ -262,5 +274,4 @@ nT = CartesianFrame(W, 'e', W, {(w,'e') : w for w in W})
 uno = nT.dual()
 zero = T.dual()
 D1 = CartesianFrame({0,1}, {0,1}, {0,1}, {(b1,b2) : b1*b2 for b1 in {0,1} for b2 in {0,1}})
-print(D1*D1)
 pdb.set_trace()

@@ -68,3 +68,7 @@ def functions_between(domain : set, codomain : set):
                 functions_tree[-1] += [f2]
     return functions_tree[-1]
 
+def composition(F : dict, G : dict): # F∘G
+    assert all(g in F.keys() for g in G.values())
+    return {x : F[G[x]] for x in G.keys()}
+
